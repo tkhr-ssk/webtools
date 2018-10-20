@@ -1,6 +1,6 @@
 ## Web Tools
 
-- [calendar.html](../calendar.html)
+- [calendar.html](./calendar.html)
 
 ### and more
 

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>create google calendar link</title>
+<style type="text/css">
+<!--
+#sample { background-color: #eee; }
+#time { font-size: x-small; }
+-->
+</style>
+<script type="text/javascript">
+<!--
+function $(id){return document.getElementById(id);}
+
+function getGCLink(title, details, location, start, end){
+    return 'http://www.google.com/calendar/event?' +
+    'action='   + 'TEMPLATE' +
+    '&text='    + encodeURIComponent(title) +
+    '&details=' + encodeURIComponent(details) +
+    '&location='+ encodeURIComponent(location) +
+    '&dates='   + start + '/' + end +
+    '&trp='     + 'false';
+//    '&sprop='   + encodeURIComponent('リンク設置元のURL') +
+//    '&sprop='   + 'name:' + encodeURIComponent('リンク設置元のサービス名');
+}
+
+function onUpdateText(){
+    var getUTC = function(date_str){
+    	var date = new Date(date_str);
+    	return date.getUTCFullYear() +
+    		zerofill(date.getUTCMonth()+1) +
+    		zerofill(date.getUTCDate()) +
+    		'T' +
+    		zerofill(date.getUTCHours()) +
+    		zerofill(date.getUTCMinutes()) +
+    		zerofill(date.getUTCSeconds()) +
+    		'Z';
+    };
+    
+    var zerofill = function(num){
+    	return ('0'+num).slice(-2);
+    }
+	
+	var text = $('raw_text').value; 
+    var output = text;
+    var title = "無題";
+    var details = output;
+    var location = ""
+    
+    var start = "";
+    var end = "";
+    var start_utc = "";
+    var end_utc = "";
+    var datetime = output.match( /\d{4}\/\d{1,2}\/\d{1,2} +\d{1,2}:\d{1,2}/g );
+    if ( datetime && 1 < datetime.length )
+    {
+    	start = datetime[0];
+    	end = datetime[1];
+    }else if (datetime && 0 < datetime.length){
+    	start = datetime[0];
+    	end = datetime[0];
+    }
+    start_utc = getUTC(start);
+    end_utc = getUTC(end);
+    
+    var title_match = output.match( /タイトル[\n\r\s\]\[]*([^\n\r\s\]\[]+)/ );
+    if ( title_match && 0 < title_match.length) title = title_match[1];
+    var loc_match = output.match( /(場所|施設)[：:\n\r\s\]]*([^\n\r\s\]\[]+)/ );
+    if ( loc_match && 0 < loc_match.length) location = loc_match[2];
+    
+    $('title').value = title;
+    $('location').value = location;
+    $('start').value = start;
+    $('end').value = end;
+    $('start_utc').value = start_utc;
+    $('end_utc').value = end_utc;
+    
+    var time = (new Date(end) - new Date(start))/(1000*60);
+    $('time').innerHTML = '('+time+'分)';
+
+	var url = getGCLink(title, details, location, start_utc, end_utc);
+    $('link').innerHTML = 'Googleカレンダーに登録する';
+    $('link').href = url;
+    $('url').value = url;
+    
+    $('result').innerHTML = ""
+}
+
+//var timer = null;
+//var target;
+//var prev_val;
+window.addEventListener('load', function() {
+  var timer = null;
+  var target = $('raw_text');
+  var prev_val = target.value;
+  target.addEventListener("focus", function(){
+	    window.clearInterval(timer);
+	    timer = window.setInterval(function(){
+	        var new_val = target.value;
+	        if(prev_val != new_val){
+	        	onUpdateText();
+	        };
+	        prev_value = new_val;
+	    }, 10);
+	}, false);
+  
+})
+//-->
+</script>
+</head>
+<body>
+<div>
+<p>Googleカレンダーリンク生成</p>
+<table>
+<tr>
+<td>Sample</td>
+<td>
+<textarea id="sample" readonly rows="4" cols="120">
+[タイトル]　打ち合わせ
+[期間]　2018/10/12 10:30 - 2018/10/12 12:00 (GMT+09:00)
+[施設]　会議室１
+</textarea>
+</td>
+</tr>
+<tr>
+<td>入力</td>
+<td>
+<textarea id="raw_text" rows="4" cols="120" onChange="onUpdateText()"></textarea>
+</td>
+</tr>
+</table>
+<p id="result"></p>
+<span></span><a href="" id="link"></a><br/>
+<span>タイトル:</span><input id="title" value="" type="text">
+<span>場所:</span><input id="location" value="" type="text"><br/>
+<span>開始:</span><input id="start" type="text"><input id="start_utc" type="text">
+<span>終了:</span><input id="end" type="text"><input id="end_utc" type="text"> <span id="time"></span><br/>
+<span>url:</span><input id="url" value="" type="text" size="60">
+</div>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<body>
+    <h1>Canvas</h1>
+    <div class="wrapper">
+        <canvas id="drawArea" width="300" height="300" style="background-color:#ecc;">Canvas not supported</canvas>
+    </div>
+    <p>直線にヒットしたかを判定する javascript サンプルプログラム</p>
+    <p>判定方法は下記URLの計算式を参考にしました。</p>
+    <a href="http://www.iot-kyoto.com/satoh/2016/01/16/hittest-001/">http://www.iot-kyoto.com/satoh/2016/01/16/hittest-001/</a>
+</body>
+<script>
+    var lines = [
+        { x1: 10, y1: 20, x2: 120, y2: 180, width: 2, style: "#c00"},
+        { x1: 110, y1: 230, x2: 220, y2: 180, width: 6, style: "#000" },
+        { x1: 210, y1: 5, x2: 170, y2: 10, width: 3, style: "#080" },
+        { x1: 20, y1: 205, x2: 280, y2: 10, width: 10, style: "#00c" }
+    ]
+    function setup() {
+        for (var i = 0; i < lines.length; i++) {
+            line = lines[i];
+            var angle = Math.atan2(line.y2 - line.y1, line.x2 - line.x1);
+            line.sn = Math.sin(angle);
+            line.cs = Math.cos(angle);
+        }
+    }
+    function drawCanvas() {
+        setup();
+        var canvas = document.getElementById('drawArea');
+        var context = canvas.getContext('2d');
+        for (var i = 0; i < lines.length; i++) {
+            line = lines[i];
+            drawLine(context, line.x1, line.y1, line.x2, line.y2, line.width, line.style);
+        }
+        canvas.onmousemove = function (e) {
+            var r = canvas.getBoundingClientRect();
+            var x = e.clientX - r.left;
+            var y = e.clientY - r.top;
+            hover = false;
+            for (var i = 0; i < lines.length; i++) {
+                line = lines[i];
+                hover = isHit(x, y, line.x1, line.y1, line.x2, line.y2, line.width, line.sn, line.cs);
+                if (hover) {
+                    console.log("Hit:" + i + "番目の線にヒットしました", x, y);
+                    break;
+                }
+            }
+        }
+    }
+    function isHit(px, py, x1, y1, x2, y2, h, sn, cs) {
+        // Ref: http://www.iot-kyoto.com/satoh/2016/01/16/hittest-001/
+        var ret = false;
+        var xm1 = x1 - px;
+        var ym1 = y1 - py;
+        var xm2 = x2 - px;
+        var ym2 = y2 - py;
+        var xr1 = xm1 * cs + ym1 * sn;
+        var yr1 = -xm1 * sn + ym1 * cs;
+        var xr2 = xm2 * cs + ym2 * sn;
+        var yr2 = -xm2 * sn + ym2 * cs;
+        var sx = xr1;
+        var sy = yr1;
+        var dx = xr2 - xr1;
+        var dy = h;
+        if (sx > 0 || sy > 0 || sx + dx < 0 || sy + dy <= 0) {
+            ret = false;
+        } else {
+            ret = true;
+        }
+        return ret;
+    }
+    function drawLine(context, ax, ay, bx, by, w, s) {
+        context.lineWidth = w;
+        context.strokeStyle = s;
+        context.beginPath();
+        context.moveTo(ax, ay);
+        context.lineTo(bx, by);
+        context.stroke();
+    }
+    window.onload = () => {
+        drawCanvas();
+    };
+</script>
+
+</html>

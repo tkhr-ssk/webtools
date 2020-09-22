@@ -17,7 +17,7 @@
         { x1: 10, y1: 20, x2: 120, y2: 180, width: 2, style: "#c00"},
         { x1: 110, y1: 230, x2: 220, y2: 180, width: 6, style: "#000" },
         { x1: 210, y1: 5, x2: 170, y2: 10, width: 3, style: "#080" },
-        { x1: 20, y1: 205, x2: 280, y2: 10, width: 10, style: "#00c" }
+        { x1: 20, y1: 205, x2: 280, y2: 10, width: 30, style: "#00c" }
     ]
     function setup() {
         for (var i = 0; i < lines.length; i++) {
@@ -27,27 +27,42 @@
             line.cs = Math.cos(angle);
         }
     }
-    function drawCanvas() {
+    function init(){
         setup();
+        drawCanvas();
         var canvas = document.getElementById('drawArea');
         var context = canvas.getContext('2d');
-        for (var i = 0; i < lines.length; i++) {
-            line = lines[i];
-            drawLine(context, line.x1, line.y1, line.x2, line.y2, line.width, line.style);
-        }
         canvas.onmousemove = function (e) {
+            drawCanvas();
             var r = canvas.getBoundingClientRect();
             var x = e.clientX - r.left;
             var y = e.clientY - r.top;
             hover = false;
-            for (var i = 0; i < lines.length; i++) {
+            // 上に重なってる線を優先するため描画と逆順に判定
+            for (var i = lines.length - 1; 0 <= i; i--) {
                 line = lines[i];
                 hover = isHit(x, y, line.x1, line.y1, line.x2, line.y2, line.width, line.sn, line.cs);
                 if (hover) {
+                    context.fillStyle='white';
+                    context.font = '30px "游ゴシック体", "Hiragino Kaku Gothic ProN",sans-serif';
+                    context.textAlign = "left";
+                    context.textBaseline = "middle";
+                    context.fillText("Hit:"+i,x,y);
                     console.log("Hit:" + i + "番目の線にヒットしました", x, y);
                     break;
                 }
             }
+        }
+    }
+    function drawCanvas() {
+        var canvas = document.getElementById('drawArea');
+        var context = canvas.getContext('2d');
+        var cw=canvas.width;
+        var ch=canvas.height;
+        context.clearRect(0,0,cw,ch);
+        for (var i = 0; i < lines.length; i++) {
+            line = lines[i];
+            drawLine(context, line.x1, line.y1, line.x2, line.y2, line.width, line.style);
         }
     }
     function isHit(px, py, x1, y1, x2, y2, h, sn, cs) {
@@ -62,7 +77,7 @@
         var xr2 = xm2 * cs + ym2 * sn;
         var yr2 = -xm2 * sn + ym2 * cs;
         var sx = xr1;
-        var sy = yr1;
+        var sy = yr1 - h/2;
         var dx = xr2 - xr1;
         var dy = h;
         if (sx > 0 || sy > 0 || sx + dx < 0 || sy + dy <= 0) {
@@ -81,7 +96,7 @@
         context.stroke();
     }
     window.onload = () => {
-        drawCanvas();
+        init();
     };
 </script>
 
